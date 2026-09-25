@@ -1,5 +1,6 @@
 package com.bitcoinalert.history;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -14,13 +15,17 @@ public class PriceHistoryStore {
     private static final Path FILE = Paths.get("data", "last-price.json");
 
     public Optional<Double> loadPreviousUsd() {
+        if (!Files.exists(FILE)) {
+            return Optional.empty();
+        }
         try {
-            if (!Files.exists(FILE)) {
-                return Optional.empty();
-            }
             JSONObject json = new JSONObject(Files.readString(FILE));
             return Optional.of(json.getDouble("usd"));
         } catch (IOException e) {
+            System.err.println("이전 가격 파일 읽기 실패: " + e.getMessage());
+            return Optional.empty();
+        } catch (JSONException e) {
+            System.err.println("이전 가격 파일 형식 손상: " + e.getMessage());
             return Optional.empty();
         }
     }
